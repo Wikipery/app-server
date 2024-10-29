@@ -1,9 +1,12 @@
+const cors = require('cors');
 require('dotenv').config();
 const config = require("./db/config.js");
 
 const express = require('express');
 const axios = require('axios');
 const app = express();
+app.use(cors());
+
 const SERVER_PORT = process.env.SERVICE_PORT;
 
 app.get('/', (req, res) => {
@@ -12,13 +15,13 @@ app.get('/', (req, res) => {
 
 
 // Fetch main Wikipedia summary
-async function getWikipediaIntro(title) {
+async function getWikipediaIntro(title, language) {
     try {
-        const response = await axios.get(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-        const test = await axios.get(`https://en.wikipedia.org/api/rest_v1/page/related/${encodeURIComponent(title)}`);
+        const response = await axios.get(`https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+        // const test = await axios.get(`https://en.wikipedia.org/api/rest_v1/page/related/${encodeURIComponent(title)}`);
 
         // const options = response.data.pages
-        console.log("Full response data:", test.data);
+        // console.log("Full response data:", response.data);
 
         if (response.data.type === 'disambiguation') {
             return { summary: null, isDisambiguation: true };
@@ -63,9 +66,14 @@ async function getWikipediaRelatedPages(title) {
 // Route to handle Wikipedia summary or disambiguation
 app.get('/wikipedia/:title', async (req, res) => {
     const title = req.params.title;
+    const lang = req.query.lang;
+
+
+    console.log(lang);
+    const language = lang;
 
     // Attempt to fetch the main article summary
-    const intro = await getWikipediaIntro(title);
+    const intro = await getWikipediaIntro(title, language);
 
     if (intro.isDisambiguation) {
         // If it's a disambiguation page, fetch related options
