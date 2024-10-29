@@ -10,6 +10,7 @@ app.get('/', (req, res) => {
     res.send("server is up");
 });
 
+
 // Fetch main Wikipedia summary
 async function getWikipediaIntro(title) {
     try {
